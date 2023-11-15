@@ -378,14 +378,17 @@ ALL_LVGL_SRC = $(shell find $(LVGL_DIR) -type f -name '*.h') $(LVGL_BINDING_DIR)
 LVGL_PP = $(BUILD)/lvgl/lvgl.pp.c
 LVGL_MPY = $(BUILD)/lvgl/lv_mpy.c
 LVGL_MPY_METADATA = $(BUILD)/lvgl/lv_mpy.json
-CFLAGS_EXTMOD += $(LV_CFLAGS) 
+CFLAGS_EXTMOD += $(LV_CFLAGS)
+CFLAGS_EXTMOD += -I$(LVGL_DIR)/src
+CFLAGS_EXTMOD += -I$(LVGL_DIR)/examples
+CFLAGS_EXTMOD += -I$(LVGL_DIR)/demos
 
-$(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py 
+$(LVGL_MPY): $(ALL_LVGL_SRC) $(LVGL_BINDING_DIR)/gen/gen_mpy.py
 	$(ECHO) "LVGL-GEN $@"
 	$(Q)mkdir -p $(dir $@)
-	$(Q)$(CPP) $(CFLAGS_EXTMOD) -DPYCPARSER -x c -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
-	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -M lvgl -MP lv -MD $(LVGL_MPY_METADATA) -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
-
+	$(ECHO) "Done LVGL-GEN $@"
+	$(Q)$(CPP) $(CFLAGS_EXTMOD) -DPYCPARSER -x c -I$(LVGL_DIR)/src -I $(LVGL_BINDING_DIR)/pycparser/utils/fake_libc_include $(INC) $(LVGL_DIR)/lvgl.h > $(LVGL_PP)
+	$(Q)$(PYTHON) $(LVGL_BINDING_DIR)/gen/gen_mpy.py -I$(LVGL_DIR)/src -M lvgl -MP lv -MD $(LVGL_MPY_METADATA) -E $(LVGL_PP) $(LVGL_DIR)/lvgl.h > $@
 .PHONY: LVGL_MPY
 LVGL_MPY: $(LVGL_MPY)
 
